@@ -121,6 +121,8 @@ class Renderer {
         });
     }
 
+    //TODO: Write a createScene1, createScene2, createScene3
+
     updateShaderUniforms(scene_idx, shader) {
         let current_scene = this.scenes[scene_idx];
         shader.setVector3('camera_position', current_scene.camera.position);

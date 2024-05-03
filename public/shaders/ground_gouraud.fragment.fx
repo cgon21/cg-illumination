@@ -18,8 +18,8 @@ uniform vec3 ambient; // Ia
 out vec4 FragColor;
 
 void main() {
-    vec3 model_color = mat_color * texture(mat_texture, model_uv).rgb;
-    
+    vec3 model_color = mat_color * texture(mat_texture, model_uv).rgb;  // taking texture (samples it, so get color of 1 pixel). 2nd parameter is UV coordinate. Sampling texture and multiplying by color
+                    //model_color is illumination equations
     // Color
     FragColor = vec4(model_color, 1.0);
 }
