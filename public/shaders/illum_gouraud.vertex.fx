@@ -4,7 +4,7 @@ precision highp float;
 // Attributes
 in vec3 position;
 in vec3 normal;
-in vec2 uv;
+in vec2 uv; 
 
 // Uniforms
 // projection 3D to 2D
@@ -27,25 +27,13 @@ out vec3 diffuse_illum;
 out vec3 specular_illum;
 
 void main() {
-    // Pass diffuse and specular illumination onto the fragment shader
-    diffuse_illum = vec3(0.0, 0.0, 0.0);
-    specular_illum = vec3(0.0, 0.0, 0.0);
-
-    float Kd, Ks = 1.0;
-
-    for (int i = 0; i < num_lights; i++) {
-        vec3 lightDirection = normalize(light_positions[i] - position);
-        vec3 N = normalize(normal);
-        vec3 L = normalize(lightDirection;)
-        vec3 diffuse = light_colors[i] * Kd * dot(N, L);
-
-        vec3 R = 2.0 * dot(N, L) * N - L;
-        vec3 V = normalize(camera_position - position);
-        vec3 specular = light_colors[i] * Ks * pow(dot(R, V), mat_shininess);
-
-        diffuse_illum += diffuse;
-        specular_illum += specular;
-    }
+    //vec3 newPosition = (world * vec4(position, 1.0)).xyz;
+    vec3 N = normalize(normal);
+    vec3 L = normalize(light_positions[0] - position);
+    diffuse_illum = vec3(light_colors[0] * max(dot(N, L), 0.0));
+    vec3 R = normalize(2.0 * dot(N, L) * N - L);
+    vec3 V = normalize(camera_position);
+    specular_illum = vec3(light_colors[0] * pow(max(dot(R, V), 0.0), mat_shininess));
 
     // Pass vertex texcoord onto the fragment shader
     model_uv = uv * texture_scale;

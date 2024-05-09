@@ -20,8 +20,12 @@ out vec3 model_normal;
 out vec2 model_uv;
 
 void main() {
+    mat3 new_matrix = mat3(world); 
+    mat3 transpose_matrix = transpose(new_matrix);
+    mat3 inverse_matrix = inverse(transpose_matrix);
+
     // Pass vertex position onto the fragment shader
-    model_position = position;
+    model_position = position * inverse_matrix; 
     // Pass vertex normal onto the fragment shader
     model_normal = normal;
     // Pass vertex texcoord onto the fragment shader
