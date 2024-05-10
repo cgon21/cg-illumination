@@ -34,8 +34,25 @@ class Renderer {
         this.scenes.forEach((scene, idx) => {
             scene.materials = material_callback(scene.scene);
             scene.ground_mesh = ground_mesh_callback(scene.scene, scene.ground_subdivisions);
-            this['createScene'+ idx](idx);
+            this['createScene' + idx](idx);
         });
+
+        window.addEventListener('keydown', (event) => this.handleKeyDown(event));
+    }
+
+    handleKeyDown(event) {
+        let key = event.key.toUpperCase();
+        let currentLight = this.scenes[this.active_scene].lights[this.active_light];
+        const moveStep = 0.2;
+
+        switch (key) {
+            case 'A': currentLight.position.x -= moveStep; break; // translate negative x
+            case 'D': currentLight.position.x += moveStep; break; // translate positive x
+            case 'F': currentLight.position.y -= moveStep; break; // translate negative y
+            case 'R': currentLight.position.y += moveStep; break; // translate positive y
+            case 'W': currentLight.position.z -= moveStep; break; // translate negative z
+            case 'S': currentLight.position.z += moveStep; break; // translate positive z
+        }
     }
 
     createScene0(scene_idx) {
@@ -83,9 +100,9 @@ class Renderer {
             heightmap: ground_heightmap
         }
         ground_mesh.material = materials['ground_' + this.shading_alg];
-        
+
         // Create other models
-        let sphere = CreateSphere('sphere', {segments: 32}, scene);
+        let sphere = CreateSphere('sphere', { segments: 32 }, scene);
         sphere.position = new Vector3(1.0, 0.5, 3.0);
         sphere.metadata = {
             mat_color: new Color3(0.10, 0.35, 0.88),
@@ -97,7 +114,7 @@ class Renderer {
         sphere.material = materials['illum_' + this.shading_alg];
         current_scene.models.push(sphere);
 
-        let box = CreateBox('box', {width: 2, height: 1, depth: 1}, scene);
+        let box = CreateBox('box', { width: 2, height: 1, depth: 1 }, scene);
         box.position = new Vector3(-1.0, 0.5, 2.0);
         box.metadata = {
             mat_color: new Color3(0.75, 0.15, 0.05),
@@ -141,7 +158,7 @@ class Renderer {
     getActiveScene() {
         return this.scenes[this.active_scene].scene;
     }
-    
+
     setActiveScene(idx) {
         this.active_scene = idx;
     }
