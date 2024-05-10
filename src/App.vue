@@ -185,7 +185,7 @@ onMounted(() => {
             <option value="gouraud">Gouraud</option>
             <option value="phong">Phong</option>
         </select>
-        <label for="heightScale">Heighmap Scale: </label>
+        <label for="heightScale">Heightmap Scale: </label>
         <input id="heightScale" type="range" value="10" min="1" max="50" style="width: 8rem;" @input="updateHeightScale" />
         <label class="spaceRight" style="margin-left: 0.5rem;">{{ data.height_scale.toFixed(1) }}</label>
         <label for="lightIdx">Light: </label>
