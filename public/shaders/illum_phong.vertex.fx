@@ -25,9 +25,9 @@ void main() {
     mat3 inverse_matrix = inverse(transpose_matrix);
 
     // Pass vertex position onto the fragment shader
-    model_position = position * inverse_matrix; 
+    model_position = vec3(world * vec4(position, 1.0));
     // Pass vertex normal onto the fragment shader
-    model_normal = normal;
+    model_normal = normal * inverse_matrix;
     // Pass vertex texcoord onto the fragment shader
     model_uv = uv;
 
