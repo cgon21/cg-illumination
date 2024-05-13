@@ -248,6 +248,59 @@ class Renderer {
         });
     }
 
+    createScene2(scene_idx) {
+        let current_scene = this.scenes[scene_idx];
+        let scene = current_scene.scene;
+    
+        let camera = new UniversalCamera('Camera', new Vector3(-10, 2, 0), scene);
+        camera.setTarget(Vector3.Zero());
+        camera.attachControl(this.canvas, true);
+    
+        let movingLight = new PointLight('movingLight', new Vector3(0, 2, -10), scene);
+        movingLight.diffuse = new Color3(0.95, 0.42, 0.11);
+        movingLight.specular = new Color3(0.5, 0.5, 0.5);
+    
+        scene.onBeforeRenderObservable.add(() => {
+            movingLight.position.x = 10 * Math.sin(scene.getEngine().getDeltaTime() / 1000);
+            movingLight.position.y = 5 + 2 * Math.cos(scene.getEngine().getDeltaTime() / 1000);
+        });
+    
+        let movingSphere = Mesh.CreateSphere('movingSphere', 32, 2, scene);
+        movingSphere.position = new Vector3(3, 1, 2);
+    
+        scene.onBeforeRenderObservable.add(() => {
+            movingSphere.position.x = 5 * Math.cos(scene.getEngine().getDeltaTime() / 1000);
+            movingSphere.position.z = 5 * Math.sin(scene.getEngine().getDeltaTime() / 1000);
+        });
+    
+        current_scene.camera = camera;
+        current_scene.lights.push(movingLight);
+        current_scene.models.push(movingSphere);
+    }
+
+    createScene3(scene_idx) {
+        let current_scene = this.scenes[scene_idx];
+        let scene = current_scene.scene;
+    
+        let camera = new UniversalCamera('Camera', new Vector3(0, 5, -15), scene);
+        camera.setTarget(Vector3.Zero());
+        camera.attachControl(this.canvas, true);
+    
+        let light2 = new PointLight('light2', new Vector3(5, 10, -10), scene);
+        light2.diffuse = new Color3(0.4, 0.6, 0.9);
+        let light3 = new PointLight('light3', new Vector3(-5, -10, 10), scene);
+        light3.diffuse = new Color3(0.9, 0.6, 0.4);
+    
+        let texturedGround = Mesh.CreateGround('texturedGround', 10, 10, 2, scene);
+        let texturedSphere = Mesh.CreateSphere('texturedSphere', 32, 3, scene);
+        texturedSphere.position.y = 2;
+    
+        current_scene.camera = camera;
+        current_scene.lights.push(light2, light3);
+        current_scene.models.push(texturedGround, texturedSphere);
+    }
+
+
     /*
     createScene2(scene_idx) {
         let scene = new Scene(this.engine);
