@@ -7,6 +7,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector2, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { VertexData, Mesh } from '@babylonjs/core';
 
 const BASE_URL = import.meta.env.BASE_URL || '/';
 
@@ -126,6 +127,18 @@ class Renderer {
         box.material = materials['illum_' + this.shading_alg];
         current_scene.models.push(box);
 
+        let prism = this.createHexPrism('prism', 1.5, 3.0, scene);
+        prism.position = new Vector3(0.0, 1.0, -3.0);
+        prism.metadata = {
+            mat_color: new Color3(0.70, 0.35, 0.88),
+            mat_texture: white_texture,
+            mat_specular: new Color3(0.8, 0.8, 0.8),
+            mat_shininess: 16,
+            texture_scale: new Vector2(1.0, 1.0)
+        }
+        prism.material = materials['illum_' + this.shading_alg];
+        current_scene.models.push(prism);
+
 
         // Animation function - called before each frame gets rendered
         scene.onBeforeRenderObservable.add(() => {
@@ -137,7 +150,7 @@ class Renderer {
             this.updateShaderUniforms(scene_idx, materials['ground_' + this.shading_alg]);
         });
     }
-    
+
 
     //TODO: Write a createScene1, createScene2, createScene3
     createScene1(scene_idx) {
@@ -145,15 +158,15 @@ class Renderer {
         let camera = new UniversalCamera("Camera", new Vector3(0, 5, -10), scene);
         camera.setTarget(Vector3.Zero());
         camera.attachControl(this.canvas, true);
-    
+
         let light = new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
         light.intensity = 0.7;
-    
+
         let sphere = Mesh.CreateSphere("sphere1", 16, 2, scene);
         sphere.position.y = 1;
-    
+
         let ground = Mesh.CreateGround("ground1", 6, 6, 2, scene);
-    
+
         this.scenes[scene_idx] = { scene: scene, camera: camera, lights: [light], models: [sphere, ground] };
     }
 
@@ -162,24 +175,24 @@ class Renderer {
         let camera = new UniversalCamera('Camera', new Vector3(-10, 2, 0), scene);
         camera.setTarget(Vector3.Zero());
         camera.attachControl(this.canvas, true);
-    
+
         let movingLight = new PointLight('movingLight', new Vector3(0, 2, -10), scene);
         movingLight.diffuse = new Color3(0.95, 0.42, 0.11);
         movingLight.specular = new Color3(0.5, 0.5, 0.5);
-    
+
         scene.onBeforeRenderObservable.add(() => {
             movingLight.position.x = 10 * Math.sin(this.engine.getDeltaTime() / 1000);
             movingLight.position.y = 5 + 2 * Math.cos(this.engine.getDeltaTime() / 1000);
         });
-    
+
         let movingSphere = Mesh.CreateSphere('movingSphere', 32, 2, scene);
         movingSphere.position = new Vector3(3, 1, 2);
-    
+
         scene.onBeforeRenderObservable.add(() => {
             movingSphere.position.x = 5 * Math.cos(this.engine.getDeltaTime() / 1000);
             movingSphere.position.z = 5 * Math.sin(this.engine.getDeltaTime() / 1000);
         });
-    
+
         this.scenes[scene_idx] = { scene: scene, camera: camera, lights: [movingLight], models: [movingSphere] };
     }
 
@@ -188,16 +201,16 @@ class Renderer {
         let camera = new UniversalCamera('Camera', new Vector3(0, 5, -15), scene);
         camera.setTarget(Vector3.Zero());
         camera.attachControl(this.canvas, true);
-    
+
         let light2 = new PointLight('light2', new Vector3(5, 10, -10), scene);
         light2.diffuse = new Color3(0.4, 0.6, 0.9);
         let light3 = new PointLight('light3', new Vector3(-5, -10, 10), scene);
         light3.diffuse = new Color3(0.9, 0.6, 0.4);
-    
+
         let texturedGround = Mesh.CreateGround('texturedGround', 10, 10, 2, scene);
         let texturedSphere = Mesh.CreateSphere('texturedSphere', 32, 3, scene);
         texturedSphere.position.y = 2;
-    
+
         this.scenes[scene_idx] = { scene: scene, camera: camera, lights: [light2, light3], models: [texturedGround, texturedSphere] };
     }
     updateShaderUniforms(scene_idx, shader) {
@@ -248,6 +261,52 @@ class Renderer {
         console.log(idx);
         this.active_light = idx;
     }
+
+    createHexPrism(name, sideLength, height, scene) {
+        // initialize arrays for vertecies and indexes
+        const vertices = [];
+        const indices = [];
+
+        const angleStep = Math.PI / 3; // angle for each side of hexagon (60 degrees)
+
+        // top and bottom vertices of the hexagon
+        for (let i = 0; i < 6; i++) {
+            const angle = i * angleStep; // angle of current vertex
+            const x = sideLength * Math.cos(angle);
+            const z = sideLength * Math.sin(angle);
+
+            // bottom vertex coordinates (y is -height / 2)
+            vertices.push(x, -height / 2, z);
+            // top vertex coordinates (y is height / 2)
+            vertices.push(x, height / 2, z);
+        }
+
+        // indices for the rectangular faces and hexagonal caps
+        for (let i = 0; i < 6; i++) {
+            const topLeft = i * 2 + 1; // index of current top vertex
+            const bottomLeft = i * 2; // index of current bottom vertex
+            const topRight = (i + 1) % 6 * 2 + 1; // index of next top vertex
+            const bottomRight = (i + 1) % 6 * 2; // index of next bottom vertex
+
+            // rectangular faces of prism
+            indices.push(bottomLeft, bottomRight, topLeft); // triangle with top left, bottom left, bottom right
+            indices.push(bottomRight, topRight, topLeft); // triangle with top left, top right, bottom right
+
+            // bottom and top faces
+            indices.push(0, bottomRight, bottomLeft); // triangle with center, bottom right, bottom left
+            indices.push(1, topLeft, topRight); // triangle with center, top right, top left
+        }
+
+        // mesh of computed vertices and indices
+        const prism = new Mesh(name, scene);
+        const vertexData = new VertexData();
+        vertexData.positions = vertices;
+        vertexData.indices = indices;
+        vertexData.applyToMesh(prism, true);
+
+        return prism;
+    }
+
 }
 
 export { Renderer }
