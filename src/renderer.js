@@ -219,6 +219,22 @@ class Renderer {
         light1.specular = new Color3(1.0, 1.0, 1.0);
         current_scene.lights.push(light1);
 
+        // Additional point lights
+        let light2 = new PointLight('light2', new Vector3(-3.0, 2.0, -4.0), scene);
+        light2.diffuse = new Color3(1.0, 0.5, 0.5);
+        light2.specular = new Color3(1.0, 0.5, 0.5);
+        current_scene.lights.push(light2);
+    
+        let light3 = new PointLight('light3', new Vector3(3.0, 2.0, 4.0), scene);
+        light3.diffuse = new Color3(0.5, 0.5, 1.0);
+        light3.specular = new Color3(0.5, 0.5, 1.0);
+        current_scene.lights.push(light3);
+    
+        let light4 = new PointLight('light4', new Vector3(-2.0, 3.0, 2.0), scene);
+        light4.diffuse = new Color3(0.5, 1.0, 0.5);
+        light4.specular = new Color3(0.5, 1.0, 0.5);
+        current_scene.lights.push(light4);
+
         // Create ground mesh
         let white_texture = RawTexture.CreateRGBTexture(new Uint8Array([255, 255, 255]), 1, 1, scene);
         let ground_heightmap = new Texture(BASE_URL + 'heightmaps/default.png', scene);
@@ -305,6 +321,17 @@ class Renderer {
         light2.diffuse = new Color3(0.3, 1.0, 0.3);
         light2.specular = new Color3(0.4, 1.0, 1.0);
         current_scene.lights.push(light2);
+
+         // Additional point lights
+        let light3 = new PointLight('light3', new Vector3(-2.0, 4.0, -3.0), scene);
+        light3.diffuse = new Color3(0.8, 0.2, 0.2);
+        light3.specular = new Color3(1.0, 0.4, 0.4);
+        current_scene.lights.push(light3);
+    
+        let light4 = new PointLight('light4', new Vector3(4.0, 1.0, 2.0), scene);
+        light4.diffuse = new Color3(0.2, 0.2, 0.8);
+        light4.specular = new Color3(0.4, 0.4, 1.0);
+        current_scene.lights.push(light4);
 
         // Create ground mesh
         let white_texture = RawTexture.CreateRGBTexture(new Uint8Array([255, 255, 255]), 1, 1, scene);
@@ -408,8 +435,40 @@ class Renderer {
     createScene3(scene_idx) {
         let current_scene = this.scenes[scene_idx];
         let scene = current_scene.scene;
-        let materials = current_scene.materials;
-        let ground_mesh = current_scene.ground_mesh;
+    
+        let camera = new UniversalCamera('Camera', new Vector3(0, 5, -15), scene);
+        camera.setTarget(Vector3.Zero());
+        camera.attachControl(this.canvas, true);
+    
+        let light2 = new PointLight('light2', new Vector3(5, 10, -10), scene);
+        light2.diffuse = new Color3(0.4, 0.6, 0.9);
+        let light3 = new PointLight('light3', new Vector3(-5, -10, 10), scene);
+        light3.diffuse = new Color3(0.9, 0.6, 0.4);
+
+         // Additional point lights
+        let light4 = new PointLight('light4', new Vector3(0, 15, 5), scene);
+        light4.diffuse = new Color3(0.8, 0.8, 0.8);
+        let light5 = new PointLight('light5', new Vector3(10, 5, -5), scene);
+        light5.diffuse = new Color3(0.6, 0.4, 0.9);
+        let light6 = new PointLight('light6', new Vector3(-10, 0, 0), scene);
+        light6.diffuse = new Color3(0.2, 0.9, 0.7);
+        
+        let texturedGround = Mesh.CreateGround('texturedGround', 10, 10, 2, scene);
+        let texturedSphere = Mesh.CreateSphere('texturedSphere', 32, 3, scene);
+        texturedSphere.position.y = 2;
+    
+        current_scene.camera = camera;
+        current_scene.lights.push(light2, light3);
+        current_scene.models.push(texturedGround, texturedSphere);
+    }
+
+
+    /*
+    createScene2(scene_idx) {
+        let scene = new Scene(this.engine);
+        let camera = new UniversalCamera('Camera', new Vector3(-10, 2, 0), scene);
+        camera.setTarget(Vector3.Zero());
+        camera.attachControl(this.canvas, true);
 
         // Set scene-wide / environment values
         scene.clearColor = current_scene.background_color;
