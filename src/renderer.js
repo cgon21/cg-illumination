@@ -31,7 +31,7 @@ class Renderer {
             },
             {
                 scene: new Scene(this.engine),
-                background_color: new Color4(0.1, 0.1, 0.1, 1.0),
+                background_color: new Color4(0.25, 0.42, 0.5, 1.0),
                 materials: null,
                 ground_subdivisions: [50, 50],
                 ground_mesh: null,
@@ -42,7 +42,7 @@ class Renderer {
             },
             {
                 scene: new Scene(this.engine),
-                background_color: new Color4(0.1, 0.1, 0.1, 1.0),
+                background_color: new Color4(0.35, 0.13, 0.1, 1.0),
                 materials: null,
                 ground_subdivisions: [50, 50],
                 ground_mesh: null,
@@ -53,7 +53,7 @@ class Renderer {
             },
             {
                 scene: new Scene(this.engine),
-                background_color: new Color4(0.1, 0.1, 0.1, 1.0),
+                background_color: new Color4(0.85, 0.4, 0.1, 1.0),
                 materials: null,
                 ground_subdivisions: [50, 50],
                 ground_mesh: null,
@@ -273,31 +273,136 @@ class Renderer {
     createScene2(scene_idx) {
         let current_scene = this.scenes[scene_idx];
         let scene = current_scene.scene;
-    
-        let camera = new UniversalCamera('Camera', new Vector3(-10, 2, 0), scene);
-        camera.setTarget(Vector3.Zero());
-        camera.attachControl(this.canvas, true);
-    
-        let movingLight = new PointLight('movingLight', new Vector3(0, 2, -10), scene);
-        movingLight.diffuse = new Color3(0.95, 0.42, 0.11);
-        movingLight.specular = new Color3(0.5, 0.5, 0.5);
-    
+        let materials = current_scene.materials;
+        let ground_mesh = current_scene.ground_mesh;
+
+        // Set scene-wide / environment values
+        scene.clearColor = current_scene.background_color;
+        scene.ambientColor = current_scene.ambient;
+        scene.useRightHandedSystem = true;
+
+        // Create camera
+        current_scene.camera = new UniversalCamera('camera', new Vector3(-3.0, 5.8, 8.0), scene);
+        current_scene.camera.setTarget(new Vector3(0.0, 1.8, 0.0));
+        current_scene.camera.upVector = new Vector3(0.0, 1.0, 0.0);
+        current_scene.camera.attachControl(this.canvas, true);
+        current_scene.camera.fov = 35.0 * (Math.PI / 180);
+        current_scene.camera.minZ = 0.1;
+        current_scene.camera.maxZ = 100.0;
+
+        // Create point light sources
+        let light0 = new PointLight('light0', new Vector3(1.0, 1.0, 5.0), scene);
+        light0.diffuse = new Color3(1.0, 1.0, 1.0);
+        light0.specular = new Color3(1.0, 1.0, 1.0);
+        current_scene.lights.push(light0);
+
+        let light1 = new PointLight('light1', new Vector3(0.0, 3.0, 0.0), scene);
+        light1.diffuse = new Color3(1.0, 1.0, 1.0);
+        light1.specular = new Color3(1.0, 1.0, 1.0);
+        current_scene.lights.push(light1);
+
+        let light2 = new PointLight('light2', new Vector3(0.0, 0.0, 3.0), scene);
+        light2.diffuse = new Color3(0.3, 1.0, 0.3);
+        light2.specular = new Color3(0.4, 1.0, 1.0);
+        current_scene.lights.push(light2);
+
+        // Create ground mesh
+        let white_texture = RawTexture.CreateRGBTexture(new Uint8Array([255, 255, 255]), 1, 1, scene);
+        let ground_heightmap = new Texture(BASE_URL + 'heightmaps/default.png', scene);
+        ground_mesh.scaling = new Vector3(20.0, 1.0, 20.0);
+        ground_mesh.metadata = {
+            mat_color: new Color3(0.10, 0.65, 0.15),
+            mat_texture: white_texture,
+            mat_specular: new Color3(0.0, 2.0, 0.0),
+            mat_shininess: 12,
+            texture_scale: new Vector2(1.0, 1.0),
+            height_scalar: 1.0,
+            heightmap: ground_heightmap
+        }
+        ground_mesh.material = materials['ground_' + this.shading_alg];
+        
+        // Create other models
+        let newCylinder = CreateCylinder('cylinder', {segments: 32}, scene);
+        newCylinder.position = new Vector3(2.3, 0.5, 1.0);
+        newCylinder.metadata = {
+            mat_color: new Color3(0.35, 0.58, 0.18),
+            mat_texture: white_texture,
+            mat_specular: new Color3(0.4, 0.2, 0.8),
+            mat_shininess: 16,
+            texture_scale: new Vector2(1.0, 1.0)
+        }
+        newCylinder.material = materials['illum_' + this.shading_alg];
+        current_scene.models.push(newCylinder);
+
+        let newHemisphere = CreateHemisphere('hemisphere', {segments: 32}, scene);
+        newHemisphere.position = new Vector3(2.3, 1.45, 1.0);
+        newHemisphere.metadata = {
+            mat_color: new Color3(0.55, 0.25, 0.25),
+            mat_texture: white_texture,
+            mat_specular: new Color3(0.4, 0.4, 0.4),
+            mat_shininess: 4,
+            texture_scale: new Vector2(1.0, 1.0)
+        }
+        newHemisphere.material = materials['illum_' + this.shading_alg];
+        current_scene.models.push(newHemisphere);
+
+        let box = CreateBox('box', { width: 4, height: 1, depth: 2 }, scene);
+        box.position = new Vector3(-3.0, 0.5, 2.0);
+        box.metadata = {
+            mat_color: new Color3(0.55, 0.55, 0.55),
+            mat_texture: white_texture,
+            mat_specular: new Color3(0.4, 0.4, 0.4),
+            mat_shininess: 16,
+            texture_scale: new Vector2(1.0, 1.0)
+        }
+        box.material = materials['illum_' + this.shading_alg];
+        current_scene.models.push(box);
+
+        let box2 = CreateBox('box', { width: 2.3, height: 1.1, depth: 1.95 }, scene);
+        box2.position = new Vector3(-2.7, 1.3, 2);
+        box2.metadata = {
+            mat_color: new Color3(0.55, 0.55, 0.55),
+            mat_texture: white_texture,
+            mat_specular: new Color3(0.4, 0.4, 0.4),
+            mat_shininess: 14,
+            texture_scale: new Vector2(1.0, 1.0)
+        }
+        box2.material = materials['illum_' + this.shading_alg];
+        current_scene.models.push(box2);
+
+        let sphere = CreateSphere('sphere', { segments: 32 }, scene);
+        sphere.position = new Vector3(-4.2, 0.2, 2.8);
+        sphere.metadata = {
+            mat_color: new Color3(0.10, 0.10, 0.10),
+            mat_texture: white_texture,
+            mat_specular: new Color3(0.8, 0.8, 0.8),
+            mat_shininess: 10,
+            texture_scale: new Vector2(1.0, 1.0)
+        }
+        sphere.material = materials['illum_' + this.shading_alg];
+        current_scene.models.push(sphere);
+
+        let sphere2 = CreateSphere('sphere', { segments: 32 }, scene);
+        sphere2.position = new Vector3(-1.8, 0.2, 2.8);
+        sphere2.metadata = {
+            mat_color: new Color3(0.10, 0.10, 0.10),
+            mat_texture: white_texture,
+            mat_specular: new Color3(0.8, 0.8, 0.8),
+            mat_shininess: 10,
+            texture_scale: new Vector2(1.0, 1.0)
+        }
+        sphere2.material = materials['illum_' + this.shading_alg];
+        current_scene.models.push(sphere2);
+
+        // Animation function - called before each frame gets rendered
         scene.onBeforeRenderObservable.add(() => {
-            movingLight.position.x = 10 * Math.sin(scene.getEngine().getDeltaTime() / 1000);
-            movingLight.position.y = 5 + 2 * Math.cos(scene.getEngine().getDeltaTime() / 1000);
+            // update models and lights here (if needed)
+            // ...
+
+            // update uniforms in shader programs
+            this.updateShaderUniforms(scene_idx, materials['illum_' + this.shading_alg]);
+            this.updateShaderUniforms(scene_idx, materials['ground_' + this.shading_alg]);
         });
-    
-        let movingSphere = Mesh.CreateSphere('movingSphere', 32, 2, scene);
-        movingSphere.position = new Vector3(3, 1, 2);
-    
-        scene.onBeforeRenderObservable.add(() => {
-            movingSphere.position.x = 5 * Math.cos(scene.getEngine().getDeltaTime() / 1000);
-            movingSphere.position.z = 5 * Math.sin(scene.getEngine().getDeltaTime() / 1000);
-        });
-    
-        current_scene.camera = camera;
-        current_scene.lights.push(movingLight);
-        current_scene.models.push(movingSphere);
     }
 
     createScene3(scene_idx) {
